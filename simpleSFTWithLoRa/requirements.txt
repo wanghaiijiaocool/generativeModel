@@ -4,6 +4,6 @@ sentencepiece
 transformers
 accelerate
 bitsandbytes
-peft==0.35.0
+peft
 gradio
 appdirs
