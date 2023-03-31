@@ -58,6 +58,7 @@ model = LlamaForCausalLM.from_pretrained(
     load_in_8bit=True,
     device_map='auto',
 )
+print(model)
 
 
 tokenizer = LlamaTokenizer.from_pretrained(
