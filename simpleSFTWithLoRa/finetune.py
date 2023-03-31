@@ -53,14 +53,14 @@ if ddp:
 
 
 model = LlamaForCausalLM.from_pretrained(
-    "/root/autodl-tmp/llama7bhf",
+    "/root/autodl-tmp/llama7bhf/llama7bhf",
     load_in_8bit=True,
     device_map='auto',
 )
 
 
 tokenizer = LlamaTokenizer.from_pretrained(
-    "/root/autodl-tmp/llama7bhf", add_eos_token=True
+    "/root/autodl-tmp/llama7bhf/llama7bhf", add_eos_token=True
 )
 
 model = prepare_model_for_int8_training(model)
