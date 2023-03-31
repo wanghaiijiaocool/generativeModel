@@ -7,7 +7,7 @@ import torch.nn as nn
 import bitsandbytes as bnb
 from datasets import load_dataset
 import transformers
-from funcutils.utils import generate_prompt,generate_and_tokenize_prompt,tokenize
+from funcutils.utils import generate_prompt,build_generate_and_tokenize_prompt,build_tokenize
 
 
 assert (
@@ -85,6 +85,8 @@ train_val = data["train"].train_test_split(
 train_data = train_val["train"]
 val_data = train_val["test"]
 
+generate_and_tokenize_prompt = build_generate_and_tokenize_prompt(tokenizer,CUTOFF_LEN=CUTOFF_LEN)
+tokenize = build_tokenize(tokenizer,CUTOFF_LEN=CUTOFF_LEN)
 
 train_data = train_data.shuffle().map(generate_and_tokenize_prompt)
 val_data = val_data.shuffle().map(generate_and_tokenize_prompt)
