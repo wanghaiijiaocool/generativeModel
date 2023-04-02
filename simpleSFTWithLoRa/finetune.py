@@ -57,7 +57,7 @@ if ddp:
 
 model = LlamaForCausalLM.from_pretrained(
     "/root/autodl-tmp/llama7bhf",
-    load_in_8bit=True,
+    load_in_8bit=False,
     device_map='balanced',
 )
 print(model)
@@ -92,7 +92,7 @@ val_data = train_val["test"]
 generate_and_tokenize_prompt = build_generate_and_tokenize_prompt(tokenizer,CUTOFF_LEN=CUTOFF_LEN)
 tokenize = build_tokenize(tokenizer,CUTOFF_LEN=CUTOFF_LEN)
 
-train_data = train_data.shuffle().map(generate_and_tokenize_prompt)
+#train_data = train_data.shuffle().map(generate_and_tokenize_prompt)
 val_data = val_data.shuffle().map(generate_and_tokenize_prompt)
 
 ############################################################
@@ -101,7 +101,7 @@ optimizer = torch.optim.Adam(model.parameters(),lr=LEARNING_RATE)
 
 lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=100,gamma=0.1,last_epoch=-1,verbose=False)
 
-ds = TextDataset(train_data)
+ds = TextDataset(val_data)
 dl = torch.utils.data.DataLoader(ds,batch_size=1)
 
 model,optimizer,dl,lr_scheduler = accelerator.prepare(model,optimizer,dl,lr_scheduler)
