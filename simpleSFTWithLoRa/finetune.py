@@ -105,7 +105,7 @@ ds = TextDataset(val_data)
 dl = torch.utils.data.DataLoader(ds,batch_size=1)
 
 model,optimizer,dl,lr_scheduler = accelerator.prepare(model,optimizer,dl,lr_scheduler)
-
+torch._dynamo.config.verbose=True 
 for batch in dl:
     print(batch)
     x = model(input_ids=batch['input_ids'],
