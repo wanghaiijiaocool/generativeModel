@@ -8,7 +8,9 @@ class TextDataset(torch.utils.data.Dataset):
         super(TextDataset,self).__init__()
 
         self.data = data
-
+        self.len = len(data)
+    def __len__(self):
+        return self.len
 
     def __getitem__(self, idx):
 
