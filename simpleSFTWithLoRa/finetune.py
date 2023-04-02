@@ -8,6 +8,8 @@ import bitsandbytes as bnb
 from datasets import load_dataset
 import transformers
 from funcutils.utils import generate_prompt,build_generate_and_tokenize_prompt,build_tokenize
+import accelerate
+from dataset.TextDataset import TextDataset
 
 
 assert (
@@ -56,7 +58,7 @@ if ddp:
 model = LlamaForCausalLM.from_pretrained(
     "/root/autodl-tmp/llama7bhf",
     load_in_8bit=True,
-    device_map='auto',
+    device_map='balance',
 )
 print(model)
 
@@ -93,41 +95,62 @@ tokenize = build_tokenize(tokenizer,CUTOFF_LEN=CUTOFF_LEN)
 train_data = train_data.shuffle().map(generate_and_tokenize_prompt)
 val_data = val_data.shuffle().map(generate_and_tokenize_prompt)
 
-trainer = transformers.Trainer(
-    model=model,
-    train_dataset=train_data,
-    eval_dataset=val_data,
-    args=transformers.TrainingArguments(
-        per_device_train_batch_size=MICRO_BATCH_SIZE,
-        gradient_accumulation_steps=GRADIENT_ACCUMULATION_STEPS,
-        warmup_steps=100,
-        num_train_epochs=EPOCHS,
-        learning_rate=LEARNING_RATE,
-        fp16=True,
-        logging_steps=20,
-        evaluation_strategy="steps",
-        save_strategy="steps",
-        eval_steps=200,
-        save_steps=200,
-        output_dir="lora-alpaca",
-        save_total_limit=3,
-        load_best_model_at_end=True,
-        ddp_find_unused_parameters=False if ddp else None,
-    ),
-    data_collator=transformers.DataCollatorForLanguageModeling(tokenizer, mlm=False),
-)
-model.config.use_cache = False
+############################################################
+accelerator = accelerate.Accelerator()
+optimizer = torch.optim.Adam(model.parameters(),lr=LEARNING_RATE)
 
-old_state_dict = model.state_dict
-model.state_dict = (
-    lambda self, *_, **__: get_peft_model_state_dict(self, old_state_dict())
-).__get__(model, type(model))
+lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=100,gamma=0.1,last_epoch=-1,verbose=False)
 
-if torch.__version__ >= "2":
-    model = torch.compile(model)
+ds = TextDataset(train_data)
+dl = torch.utils.data.DataLoader(ds,batch_size=1)
 
-trainer.train()
+model,optimizer,dl,lr_scheduler = accelerator.prepare(model,optimizer,dl,lr_scheduler)
 
-model.save_pretrained("lora-alpaca")
+for batch in train_data:
+    model(input_ids=batch['input_ids'],
+          attention_mask=batch['attention_mask'],
+          labels=batch['labels'])
+
+
+
+#############################################################
+
+
+# trainer = transformers.Trainer(
+#     model=model,
+#     train_dataset=train_data,
+#     eval_dataset=val_data,
+#     args=transformers.TrainingArguments(
+#         per_device_train_batch_size=MICRO_BATCH_SIZE,
+#         gradient_accumulation_steps=GRADIENT_ACCUMULATION_STEPS,
+#         warmup_steps=100,
+#         num_train_epochs=EPOCHS,
+#         learning_rate=LEARNING_RATE,
+#         fp16=True,
+#         logging_steps=20,
+#         evaluation_strategy="steps",
+#         save_strategy="steps",
+#         eval_steps=200,
+#         save_steps=200,
+#         output_dir="lora-alpaca",
+#         save_total_limit=3,
+#         load_best_model_at_end=True,
+#         ddp_find_unused_parameters=False if ddp else None,
+#     ),
+#     data_collator=transformers.DataCollatorForLanguageModeling(tokenizer, mlm=False),
+# )
+# model.config.use_cache = False
+#
+# old_state_dict = model.state_dict
+# model.state_dict = (
+#     lambda self, *_, **__: get_peft_model_state_dict(self, old_state_dict())
+# ).__get__(model, type(model))
+#
+# if torch.__version__ >= "2":
+#     model = torch.compile(model)
+#
+# trainer.train()
+#
+# model.save_pretrained("lora-alpaca")
 
 
