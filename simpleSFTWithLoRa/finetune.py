@@ -58,7 +58,7 @@ if ddp:
 model = LlamaForCausalLM.from_pretrained(
     "/root/autodl-tmp/llama7bhf",
     load_in_8bit=True,
-    device_map='balance',
+    device_map='balanced',
 )
 print(model)
 
