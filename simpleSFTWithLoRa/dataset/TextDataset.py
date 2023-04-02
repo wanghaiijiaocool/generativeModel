@@ -5,7 +5,7 @@ import torch
 class TextDataset(torch.utils.data.Dataset):
 
     def __int__(self,data):
-        super().__init__(TextDataset,self)
+        super().__init__()
 
         self.data = data
 
