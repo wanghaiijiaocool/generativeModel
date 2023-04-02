@@ -4,8 +4,8 @@ import torch
 
 class TextDataset(torch.utils.data.Dataset):
 
-    def __int__(self,data):
-        super().__init__()
+    def __init__(self,data):
+        super(TextDataset,self).__init__()
 
         self.data = data
 
@@ -19,8 +19,8 @@ class TextDataset(torch.utils.data.Dataset):
         labels = item['labels'] if 'labels' in item else None
 
         item = {
-            'input_ids':input_ids,
-           "att_mask":att_mask,
-            "labels":labels
+            'input_ids':torch.LongTensor(input_ids),
+           "att_mask":torch.LongTensor(att_mask),
+            "labels":torch.LongTensor(labels)
         }
         return item
