@@ -5,8 +5,8 @@ import torch
 class TextDataset(torch.utils.data.Dataset):
 
     def __int__(self,data):
-        #super(TextDataset,self).__init__()
-        super().__int__()
+        super().__init__(TextDataset,self)
+
         self.data = data
 
 
