@@ -109,7 +109,7 @@ model,optimizer,dl,lr_scheduler = accelerator.prepare(model,optimizer,dl,lr_sche
 for batch in dl:
     print(batch)
     x = model(input_ids=batch['input_ids'],
-          attention_mask=batch['attention_mask'],
+          attention_mask=batch['att_mask'],
           labels=batch['labels'])
     print(x)
 
