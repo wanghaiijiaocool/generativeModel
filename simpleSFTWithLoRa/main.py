@@ -13,7 +13,7 @@ if __name__ == "__main__":
     parser.add_argument('--data_path_or_name', type=str, default='./alpaca_data_cleaned.json', metavar='N')
     parser.add_argument('--max_epochs', type=int, default=1)
     parser.add_argument('--load_in_8bit', action="store_true",default=False)
-    parser.add_argument('--device_map', type=str,default="auto")
+    parser.add_argument('--device_map', type=str,default="balanced")
     parser.add_argument('--cuda_kwargs', type=str, default=None)
     parser.add_argument('--val_size', type=int, default=200)
     parser.add_argument('--cutoff_len',type=int,default=256)

@@ -77,7 +77,7 @@ def load_data(path,tokenizer,rank,batch_size=[],world_size=1,val_size=100,CUTOFF
     test_dl = torch.utils.data.DataLoader(test_ds,**test_args)
     return train_dl,test_dl,train_sampler,test_sampler
 
-def load_model(path_or_name,load_in_8bit=False,device_map='auto',):
+def load_model(path_or_name,load_in_8bit=False,device_map='auto'):
     model = LlamaForCausalLM.from_pretrained(
         path_or_name,
         load_in_8bit=load_in_8bit,
