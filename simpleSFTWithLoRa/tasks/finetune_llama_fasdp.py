@@ -25,6 +25,7 @@ from torch.distributed.fsdp.wrap import (
     wrap,
 )
 import tqdm
+import pprint
 
 from peft import (
     prepare_model_for_int8_training,
@@ -107,7 +108,7 @@ def train(model,dl,optimizer,rank,epoch,sampler=None):
 
     if(sampler is not None):
         sampler.set_epoch(epoch)
-
+    step = 0
     for batch in tqdm.tqdm(dl,desc=f"at rank {rank}"):
         input_ids = batch['input_ids'].to(rank)
         att_mask = batch['attention_mask'].to(rank)
@@ -121,7 +122,9 @@ def train(model,dl,optimizer,rank,epoch,sampler=None):
 
         ddp_loss[0] += loss.item()
         ddp_loss[1] += len(input_ids)
-
+        if(rank == 0):
+            print('Train Epoch: {}\t Step {} \tLoss: {:.6f}'.format(epoch, step,ddp_loss[0] / ddp_loss[1]))
+        step += 1
     dist.all_reduce(ddp_loss, op=dist.ReduceOp.SUM)
     if rank == 0:
         print('Train Epoch: {} \tLoss: {:.6f}'.format(epoch, ddp_loss[0] / ddp_loss[1]))
@@ -150,6 +153,9 @@ def start(rank,world_size,path_or_name,load_in_8bit,device_map,
 
     model, tokenizer = load_model(path_or_name,load_in_8bit,device_map)
     model = FSDP(model, auto_wrap_policy=my_auto_wrap_policy,device_id=rank)
+
+    parameters = list(model.parameters())
+
     optimizer = torch.optim.Adadelta(model.parameters(), lr=lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=lr_schedule_gamma)
 
@@ -158,6 +164,10 @@ def start(rank,world_size,path_or_name,load_in_8bit,device_map,
         batch_size=batch_size, world_size=world_size,
         val_size=val_size, CUTOFF_LEN=cutoff_len, cuda_kwargs=cuda_kwargs
     )
+    if(rank==0):
+        print(f"{model}")
+        print(f"per-gpu/tpu (sharded) parameter num: {sum(p.numel() for p in parameters)}")
+        print(f"\n=== optimizer ===\n{pprint.pformat(optimizer)}\n")
 
 
     init_start_event = torch.cuda.Event(enable_timing=True)
