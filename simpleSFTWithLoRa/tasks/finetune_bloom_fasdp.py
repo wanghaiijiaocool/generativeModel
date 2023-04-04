@@ -50,13 +50,7 @@ def load_data(path,tokenizer,rank,batch_size=[],world_size=1,val_size=100,CUTOFF
         test_size=val_size, shuffle=True, seed=42
     )
     train_datao = train_val["train"].shuffle()
-    if(split_rank):
-        train_data = []
-        for idx,d in enumerate(train_datao):
-            if(rank == int(str(idx)[-1])  or idx % int(rank) == 0):
-                train_data.append(d)
-    else:
-        train_data = train_datao
+    train_data = train_datao
 
 
     val_data = train_val["test"]
