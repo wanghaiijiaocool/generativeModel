@@ -53,7 +53,7 @@ def load_data(path,tokenizer,rank,batch_size=[],world_size=1,val_size=100,CUTOFF
     if(split_rank):
         train_data = []
         for idx,d in enumerate(train_datao):
-            if(idx % int(rank) == 0):
+            if(rank == int(str(idx)[-1])  or idx % int(rank) == 0):
                 train_data.append(d)
     else:
         train_data = train_datao
