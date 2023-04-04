@@ -49,6 +49,6 @@ if __name__ == "__main__":
             None,
             args.lr,
             args.lr_schedule_gamma)
-        ,nprocs=world_size,
+        ,nprocs=world_size,join=True
     )
 
