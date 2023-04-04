@@ -22,7 +22,7 @@ class TextDataset(torch.utils.data.Dataset):
 
         item = {
             'input_ids':torch.LongTensor(input_ids),
-           "att_mask":torch.LongTensor(att_mask),
+           "attention_mask":torch.LongTensor(att_mask),
             "labels":torch.LongTensor(labels)
         }
         return item
