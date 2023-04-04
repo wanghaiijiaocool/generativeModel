@@ -113,8 +113,13 @@ def train(model,dl,optimizer,rank,epoch,sampler=None):
 
         optimizer.zero_grad()
         output = model(input_ids=input_ids,attention_mask=att_mask,labels=labels)
-        print(output)
+        loss = output.loss
+        loss.backward()
         optimizer.step()
+
+        ddp_loss[0] += loss.item()
+        ddp_loss[1] += len(input_ids)
+
     dist.all_reduce(ddp_loss, op=dist.ReduceOp.SUM)
     if rank == 0:
         print('Train Epoch: {} \tLoss: {:.6f}'.format(epoch, ddp_loss[0] / ddp_loss[1]))
