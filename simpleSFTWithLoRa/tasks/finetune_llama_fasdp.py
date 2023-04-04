@@ -104,7 +104,7 @@ def train(model,dl,optimizer,rank,epoch,sampler=None):
     if(sampler is not None):
         sampler.set_epoch(epoch)
 
-    for b_idx,batch in dl:
+    for b_idx,batch in enumerate(dl):
         input_ids = batch['input_ids'].to(rank)
         att_mask = batch['attention_mask'].to(rank)
         labels = batch['labels'].to(rank)
@@ -140,7 +140,7 @@ def start(rank,world_size,path_or_name,load_in_8bit,device_map,
     torch.cuda.set_device(rank)
 
     model, tokenizer = load_model(path_or_name,load_in_8bit,device_map)
-    model = FSDP(model, auto_wrap_policy=my_auto_wrap_policy)
+    model = FSDP(model, auto_wrap_policy=my_auto_wrap_policy,device_id=rank)
     optimizer = torch.optim.Adadelta(model.parameters(), lr=lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=lr_schedule_gamma)
 
