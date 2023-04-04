@@ -164,10 +164,10 @@ def start(rank,world_size,path_or_name,load_in_8bit,device_map,
         batch_size=batch_size, world_size=world_size,
         val_size=val_size, CUTOFF_LEN=cutoff_len, cuda_kwargs=cuda_kwargs
     )
-    if(rank==0):
-        print(f"{model}")
-        print(f"per-gpu/tpu (sharded) parameter num: {sum(p.numel() for p in parameters)}")
-        print(f"\n=== optimizer ===\n{pprint.pformat(optimizer)}\n")
+
+    print(f"{model}")
+    print(f"rank:{rank} per-gpu/tpu (sharded) parameter num: {sum(p.numel() for p in parameters)}")
+    print(f"\n=== optimizer ===\nrank:{rank} \n{pprint.pformat(optimizer)}\n")
 
 
     init_start_event = torch.cuda.Event(enable_timing=True)
