@@ -4,9 +4,11 @@ from tasks.finetune_llama_fasdp import load_model
 import argparse
 import torch
 import torch.multiprocessing as mp
+import os
 
 
 if __name__ == "__main__":
+    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
     parser = argparse.ArgumentParser(description='fsdp')
     parser.add_argument('--batch_size', type=int, default=1, metavar='N')
     parser.add_argument('--model_path', type=str, default='/root/autodl-tmp/llama7bhf', metavar='N')
