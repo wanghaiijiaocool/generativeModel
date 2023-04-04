@@ -125,7 +125,7 @@ def train(model,dl,optimizer,rank,epoch,sampler=None):
 
         ddp_loss[0] += loss.item()
         ddp_loss[1] += len(input_ids)
-        if(rank == 0 and step % 500 == 0):
+        if(rank == 0 and step % 50 == 0):
             print('Train Epoch: {}\t Step {} \tLoss: {:.6f}'.format(epoch, step,ddp_loss[0] / ddp_loss[1]))
         step += 1
     dist.all_reduce(ddp_loss, op=dist.ReduceOp.SUM)
