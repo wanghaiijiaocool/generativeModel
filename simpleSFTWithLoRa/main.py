@@ -5,6 +5,7 @@ import argparse
 import torch
 import torch.multiprocessing as mp
 import os
+import logging
 
 
 if __name__ == "__main__":
