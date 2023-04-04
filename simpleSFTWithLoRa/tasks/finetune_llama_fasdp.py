@@ -70,10 +70,7 @@ def load_data(path,tokenizer,rank,batch_size=[],world_size=1,val_size=100,CUTOFF
         "batch_size": batch_size[1] if isinstance(batch_size, list) else batch_size,
         "sampler": test_sampler
     }
-    if(cuda_kwargs is None):
-        cuda_kwargs = {'num_workers': 2,
-                       'pin_memory': True,
-                       'shuffle': False}
+
     train_kwargs.update(cuda_kwargs)
     test_args.update(test_args)
     train_dl = torch.utils.data.DataLoader(train_ds,**train_kwargs)
@@ -126,20 +123,34 @@ def save_model(save_path,model):
     states = model.state_dict()
     torch.save(states, save_path)
 
-def start(model,
-          data_path,
-          optimizer,scheduler,rank,world_size,epochs=1,
-          save_folder=None
+def start(rank,world_size,path_or_name,load_in_8bit,device_map,
+          batch_size,data_path,cuda_kwargs,
+          epochs=1,
+          val_size=1000,
+          cutoff_len=256,
+          save_folder=None,
+          lr=1e-5,
+          lr_schedule_gamma=0.7,
           ):
     setup(rank,world_size=world_size)
 
-    train_dl, test_dl, train_sampler, test_sampler = load_data(path=data_path,rank=rank)
+
 
     my_auto_wrap_policy = functools.partial(
-        size_based_auto_wrap_policy, min_num_params=100
+        size_based_auto_wrap_policy, min_num_params=20000
     )
+    model,tokenizer = load_model(path_or_name,load_in_8bit,device_map)
     torch.cuda.set_device(rank)
-    model = FSDP(model.to(rank))
+    model = FSDP(model.to(rank), auto_wrap_policy=my_auto_wrap_policy)
+    optimizer = torch.optim.Adadelta(model.parameters(), lr=lr)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=lr_schedule_gamma)
+
+    train_dl, test_dl, train_sampler, test_sampler = load_data(
+        path=data_path,rank=rank, tokenizer=tokenizer,
+        batch_size=batch_size, world_size=world_size,
+        val_size=val_size, CUTOFF_LEN=cutoff_len, cuda_kwargs=cuda_kwargs
+    )
+
 
     init_start_event = torch.cuda.Event(enable_timing=True)
     init_end_event = torch.cuda.Event(enable_timing=True)
