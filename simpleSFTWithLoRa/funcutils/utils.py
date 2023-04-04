@@ -49,7 +49,6 @@ def build_generate_and_tokenize_prompt(tokenizer,CUTOFF_LEN=256):
     
     ### Instruction:
     {data_point["instruction"]}
-    
     ### Input:
     {data_point["input"]}
     
@@ -67,13 +66,15 @@ def build_generate_and_tokenize_prompt(tokenizer,CUTOFF_LEN=256):
     """
             )
         )
+
         len_user_prompt_tokens = (
             len(
                 tokenizer(
                     user_prompt,
                     truncation=True,
                     max_length=CUTOFF_LEN + 1,
-                    padding="max_length",
+                    # bug repaired, no need pad the prompt -whj
+                    padding=False,
                 )["input_ids"]
             )
             - 1
@@ -84,6 +85,7 @@ def build_generate_and_tokenize_prompt(tokenizer,CUTOFF_LEN=256):
             max_length=CUTOFF_LEN + 1,
             padding="max_length",
         )["input_ids"][:-1]
+
         return {
             "input_ids": full_tokens,
             "labels": [-100] * len_user_prompt_tokens
