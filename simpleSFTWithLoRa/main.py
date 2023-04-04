@@ -1,6 +1,5 @@
 #encoding=utf-8
 from tasks.finetune_bloom_fasdp import start
-from tasks.finetune_llama_fasdp import load_model
 import argparse
 import torch
 import torch.multiprocessing as mp
