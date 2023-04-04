@@ -132,6 +132,7 @@ def start(rank,world_size,path_or_name,load_in_8bit,device_map,
           lr=1e-5,
           lr_schedule_gamma=0.7,
           ):
+    print("rank",rank)
     setup(rank,world_size=world_size)
 
 

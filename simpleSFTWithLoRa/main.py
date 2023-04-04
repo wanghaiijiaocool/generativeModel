@@ -30,7 +30,7 @@ if __name__ == "__main__":
                        'shuffle': False}
     else:
         cuda_kwargs = eval(args.cuda_kwargs)
-
+    print("world_size",world_size)
     # rank, world_size, path_or_name, load_in_8bit, device_map,
     # batch_size, data_path, cuda_kwargs,
     # epochs = 1,
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     mp.spawn(start
         ,args=(world_size,args.model_path,args.load_in_8bit,args.device_map,
             args.batch_size,args.data_path_or_name,cuda_kwargs,
-            args.max_epoch,
+            args.max_epochs,
             args.val_size,
             args.cutoff_len,
             None,
