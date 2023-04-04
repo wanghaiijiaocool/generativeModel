@@ -1,6 +1,6 @@
 #encoding=utf-8
 import os
-
+import logging
 import torch
 import torch.nn as nn
 import bitsandbytes as bnb
@@ -78,11 +78,13 @@ def load_data(path,tokenizer,rank,batch_size=[],world_size=1,val_size=100,CUTOFF
     return train_dl,test_dl,train_sampler,test_sampler
 
 def load_model(path_or_name,load_in_8bit=False,device_map='auto'):
+    logging.info(f"load model in {path_or_name}|{load_in_8bit}|{device_map}")
     model = LlamaForCausalLM.from_pretrained(
         path_or_name,
         load_in_8bit=load_in_8bit,
         device_map=device_map
     )
+    logging.info(f"load model complete")
     tokenizer = LlamaTokenizer.from_pretrained(path_or_name)
     return model,tokenizer
 def prepare_peft(model,target_modules,lora_rank=8,lora_alpha=1,lora_dropout=0.5):
@@ -132,7 +134,7 @@ def start(rank,world_size,path_or_name,load_in_8bit,device_map,
           lr=1e-5,
           lr_schedule_gamma=0.7,
           ):
-    print("rank",rank)
+    logging.info("rank",rank)
     setup(rank,world_size=world_size)
 
 
@@ -140,6 +142,7 @@ def start(rank,world_size,path_or_name,load_in_8bit,device_map,
     my_auto_wrap_policy = functools.partial(
         size_based_auto_wrap_policy, min_num_params=20000
     )
+    torch.cuda.set_device(rank)
     model,tokenizer = load_model(path_or_name,load_in_8bit,device_map)
     torch.cuda.set_device(rank)
     model = FSDP(model.to(rank), auto_wrap_policy=my_auto_wrap_policy)
