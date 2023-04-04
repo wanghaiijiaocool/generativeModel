@@ -42,9 +42,17 @@ if __name__ == "__main__":
     # save_folder = None,
     # lr = 1e-5,
     # lr_schedule_gamma = 0.7,
-
+    # start(world_size,args.model_path,args.load_in_8bit,args.device_map,
+    #         args.batch_size,args.data_path_or_name,cuda_kwargs,
+    #         args.max_epochs,
+    #         args.val_size,
+    #         args.cutoff_len,
+    #         None,
+    #         args.lr,
+    #         args.lr_schedule_gamma)
+    model, tokenizer = load_model(args.model_path,args.load_in_8bit,args.device_map)
     mp.spawn(start
-        ,args=(world_size,args.model_path,args.load_in_8bit,args.device_map,
+        ,args=(world_size,model,tokenizer,
             args.batch_size,args.data_path_or_name,cuda_kwargs,
             args.max_epochs,
             args.val_size,

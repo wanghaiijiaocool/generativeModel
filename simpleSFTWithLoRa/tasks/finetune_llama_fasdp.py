@@ -125,7 +125,8 @@ def save_model(save_path,model):
     states = model.state_dict()
     torch.save(states, save_path)
 
-def start(rank,world_size,path_or_name,load_in_8bit,device_map,
+def start(rank,world_size,#path_or_name,load_in_8bit,device_map,
+          model,tokenizer,
           batch_size,data_path,cuda_kwargs,
           epochs=1,
           val_size=1000,
@@ -143,8 +144,7 @@ def start(rank,world_size,path_or_name,load_in_8bit,device_map,
         size_based_auto_wrap_policy, min_num_params=20000
     )
     torch.cuda.set_device(rank)
-    model,tokenizer = load_model(path_or_name,load_in_8bit,device_map)
-    torch.cuda.set_device(rank)
+
     model = FSDP(model.to(rank), auto_wrap_policy=my_auto_wrap_policy)
     optimizer = torch.optim.Adadelta(model.parameters(), lr=lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=lr_schedule_gamma)
