@@ -175,7 +175,7 @@ def start(rank,world_size,path_or_name,load_in_8bit,device_map,
 
     init_start_event.record()
 
-
+    dist.barrier()
     for epoch in range(1, epochs + 1):
         train(model=model, rank=rank, dl=train_dl, optimizer=optimizer, epoch=epoch, sampler=train_sampler)
         #test(model, rank, world_size, test_loader)
