@@ -43,20 +43,29 @@ def setup(rank, world_size):
     dist.init_process_group("nccl", rank=rank, world_size=world_size)
 def cleanup():
     dist.destroy_process_group()
-def load_data(path,tokenizer,rank,batch_size=[],world_size=1,val_size=100,CUTOFF_LEN=256,cuda_kwargs=None):
+def load_data(path,tokenizer,rank,batch_size=[],world_size=1,val_size=100,CUTOFF_LEN=256,cuda_kwargs=None,split_rank=True):
     data = load_dataset("json", data_files=path)
 
     train_val = data["train"].train_test_split(
         test_size=val_size, shuffle=True, seed=42
     )
-    train_data = train_val["train"]
+    train_datao = train_val["train"].shuffle()
+    if(split_rank):
+        train_data = []
+        for idx,d in enumerate(train_datao):
+            if(idx % int(rank) == 0):
+                train_data.append(d)
+    else:
+        train_data = train_datao
+
+
     val_data = train_val["test"]
 
     tokenizer.pad_token_id = 0  # unk. we want this to be different from the eos token
     generate_and_tokenize_prompt = build_generate_and_tokenize_prompt(tokenizer,CUTOFF_LEN=CUTOFF_LEN)
     tokenize = build_tokenize(tokenizer,CUTOFF_LEN=CUTOFF_LEN)
-    train_data = train_data.shuffle().map(generate_and_tokenize_prompt)
-    val_data = val_data.shuffle().map(generate_and_tokenize_prompt)
+    train_data = train_data.map(generate_and_tokenize_prompt)
+    val_data = val_data.map(generate_and_tokenize_prompt)
 
     train_ds = TextDataset(train_data)
     test_ds = TextDataset(val_data)
