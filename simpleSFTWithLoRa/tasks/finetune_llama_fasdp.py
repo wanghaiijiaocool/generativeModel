@@ -24,6 +24,8 @@ from torch.distributed.fsdp.wrap import (
     enable_wrap,
     wrap,
 )
+import tqdm
+
 from peft import (
     prepare_model_for_int8_training,
     LoraConfig,
@@ -106,7 +108,7 @@ def train(model,dl,optimizer,rank,epoch,sampler=None):
     if(sampler is not None):
         sampler.set_epoch(epoch)
 
-    for b_idx,batch in enumerate(dl):
+    for batch in tqdm.tqdm(dl,desc=f"at rank {rank}"):
         input_ids = batch['input_ids'].to(rank)
         att_mask = batch['attention_mask'].to(rank)
         labels = batch['labels'].to(rank)
