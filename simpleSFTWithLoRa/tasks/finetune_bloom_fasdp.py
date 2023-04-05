@@ -105,7 +105,7 @@ def prepare_peft(model,target_modules,lora_rank=8,lora_alpha=1,lora_dropout=0.5)
     model = prepare_model_for_int8_training(model)
     model = get_peft_model(model, config)
     return model
-
+@torchsnooper.snoop()
 def train(model,dl,optimizer,rank,epoch,sampler=None):
     model.train()
     ddp_loss = torch.zeros(2).to(rank)
@@ -137,7 +137,7 @@ def save_model(save_path,model):
     # state_dict for FSDP model is only available on Nightlies for now
     states = model.state_dict()
     torch.save(states, save_path)
-@torchsnooper.snoop()
+
 def start(rank,world_size,path_or_name,load_in_8bit,device_map,
           batch_size,data_path,cuda_kwargs,
           epochs=1,
