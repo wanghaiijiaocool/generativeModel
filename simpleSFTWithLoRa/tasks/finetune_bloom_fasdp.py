@@ -150,14 +150,12 @@ def start(rank,world_size,path_or_name,load_in_8bit,device_map,
     print("rank",rank)
     setup(rank,world_size=world_size)
 
-    my_auto_wrap_policy = functools.partial(
-        size_based_auto_wrap_policy, min_num_params=20000
-    )
+
     torch.cuda.set_device(rank)
 
     model, tokenizer = load_model(path_or_name,load_in_8bit,device_map)
-    model = FSDP(model, auto_wrap_policy=my_auto_wrap_policy,device_id=torch.cuda.current_device(),
-                 backward_prefetch=BackwardPrefetch.BACKWARD_PRE)
+    model = FSDP(model, device_id=torch.cuda.current_device(),
+                 backward_prefetch=BackwardPrefetch.BACKWARD_POST)
 
     parameters = list(model.parameters())
 
