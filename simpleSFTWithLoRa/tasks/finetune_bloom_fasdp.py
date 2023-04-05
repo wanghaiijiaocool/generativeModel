@@ -156,7 +156,8 @@ def start(rank,world_size,path_or_name,load_in_8bit,device_map,
     torch.cuda.set_device(rank)
 
     model, tokenizer = load_model(path_or_name,load_in_8bit,device_map)
-    model = FSDP(model, auto_wrap_policy=my_auto_wrap_policy,device_id=rank)
+    model = FSDP(model, auto_wrap_policy=my_auto_wrap_policy,device_id=torch.cuda.current_device(),
+                 backward_prefetch=BackwardPrefetch.BACKWARD_PRE)
 
     parameters = list(model.parameters())
 
