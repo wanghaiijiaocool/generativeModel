@@ -26,6 +26,7 @@ from torch.distributed.fsdp.wrap import (
 )
 import tqdm
 import pprint
+import torchsnooper
 
 from peft import (
     prepare_model_for_int8_training,
@@ -136,7 +137,7 @@ def save_model(save_path,model):
     # state_dict for FSDP model is only available on Nightlies for now
     states = model.state_dict()
     torch.save(states, save_path)
-
+@torchsnooper.snoop()
 def start(rank,world_size,path_or_name,load_in_8bit,device_map,
           batch_size,data_path,cuda_kwargs,
           epochs=1,
@@ -178,7 +179,6 @@ def start(rank,world_size,path_or_name,load_in_8bit,device_map,
 
     init_start_event.record()
 
-    dist.barrier()
     for epoch in range(1, epochs + 1):
         train(model=model, rank=rank, dl=train_dl, optimizer=optimizer, epoch=epoch, sampler=train_sampler)
         #test(model, rank, world_size, test_loader)
