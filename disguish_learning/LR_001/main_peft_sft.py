@@ -13,7 +13,7 @@ from peft import (
 from datasets import load_dataset
 
 
-cache_dir = '../model/'
+cache_dir = '/root/autodl-tmp/model/'
 ##############
 # 模型部分 THUDM/glm-large-chinese 733m THUDM/glm-10b
 model = AutoModel.from_pretrained('THUDM/glm-10b',cache_dir=cache_dir)
