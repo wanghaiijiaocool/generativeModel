@@ -16,8 +16,8 @@ from datasets import load_dataset
 cache_dir = '/root/autodl-tmp/model/'
 ##############
 # 模型部分 THUDM/glm-large-chinese 733m THUDM/glm-10b
-model = AutoModel.from_pretrained('THUDM/glm-10b',cache_dir=cache_dir)
-tokenizer = AutoTokenizer.from_pretrained('THUDM/glm-10b',cache_dir=cache_dir)
+model = AutoModel.from_pretrained('THUDM/glm-2b',cache_dir=cache_dir)
+tokenizer = AutoTokenizer.from_pretrained('THUDM/glm-2b',cache_dir=cache_dir)
 model = prepare_model_for_int8_training(model)
 lora_config = LoraConfig(
     r=8,#LORA_R,
