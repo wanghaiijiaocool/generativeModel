@@ -1,8 +1,8 @@
 #encoding=utf-8
-from tasks.finetune_bloom_fasdp import start
+from tasks.finetune_glm_acc import start_deep_speed
 import argparse
 import torch
-import torch.multiprocessing as mp
+
 import os
 import logging
 
@@ -25,24 +25,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     world_size = torch.cuda.device_count()
+    start_deep_speed(world_size=world_size,
+                     path_or_name=args.model_path,
 
-    if(args.cuda_kwargs is None):
-        cuda_kwargs = {'num_workers': 2,
-                       'pin_memory': True,
-                       'shuffle': False}
-    else:
-        cuda_kwargs = eval(args.cuda_kwargs)
-    print("world_size",world_size)
 
-    mp.spawn(start
-        ,args=(world_size,args.model_path,args.load_in_8bit,None,
-            args.batch_size,args.data_path_or_name,cuda_kwargs,
-            args.max_epochs,
-            args.val_size,
-            args.cutoff_len,
-            None,
-            args.lr,
-            args.lr_schedule_gamma)
-        ,nprocs=world_size,join=True
     )
+
+
+
 
