@@ -17,8 +17,8 @@ cache_dir = '/root/autodl-tmp/model/'
 data_cache_dir = '/root/autodl-tmp/data/'
 ##############
 # 模型部分 THUDM/glm-large-chinese 733m THUDM/glm-10b bigscience/bloom-7b1
-model = AutoModel.from_pretrained('models--THUDM--glm-2b',cache_dir=cache_dir,trust_remote_code=True)
-tokenizer = AutoTokenizer.from_pretrained('models--THUDM--glm-2b',cache_dir=cache_dir,trust_remote_code=True)
+model = AutoModel.from_pretrained('THUDM/glm-2b',cache_dir=cache_dir,trust_remote_code=True)
+tokenizer = AutoTokenizer.from_pretrained('THUDM/glm-2b',cache_dir=cache_dir,trust_remote_code=True)
 model = prepare_model_for_int8_training(model)
 lora_config = LoraConfig(
     r=8,#LORA_R,
