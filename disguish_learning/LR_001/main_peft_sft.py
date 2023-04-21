@@ -14,10 +14,11 @@ from datasets import load_dataset
 
 
 cache_dir = '/root/autodl-tmp/model/'
+data_cache_dir = '/root/autodl-tmp/data/'
 ##############
 # 模型部分 THUDM/glm-large-chinese 733m THUDM/glm-10b bigscience/bloom-7b1
-model = AutoModel.from_pretrained('models--THUDM--glm-10b',cache_dir=cache_dir,trust_remote_code=True)
-tokenizer = AutoTokenizer.from_pretrained('models--THUDM--glm-10b',cache_dir=cache_dir,trust_remote_code=True)
+model = AutoModel.from_pretrained('models--THUDM--glm-2b',cache_dir=cache_dir,trust_remote_code=True)
+tokenizer = AutoTokenizer.from_pretrained('models--THUDM--glm-2b',cache_dir=cache_dir,trust_remote_code=True)
 model = prepare_model_for_int8_training(model)
 lora_config = LoraConfig(
     r=8,#LORA_R,
@@ -57,7 +58,7 @@ def build_tokenzie_func(tokenizer,pad_idx=0):
         return prompt,answer,prompt_idxs,labels
     return tokenize
 tokenize_func = build_tokenzie_func(tokenizer)
-data = load_dataset("/root/autodl-tmp/data/instructions-zh")
+data = load_dataset(data_cache_dir+"/instructions-zh")
 
 train_data = data['train'].map(tokenize_func)
 val_data = data['validation'].map(tokenize_func)
