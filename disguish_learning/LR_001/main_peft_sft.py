@@ -59,7 +59,7 @@ def build_tokenzie_func(tokenizer,pad_idx=0):
         return prompt,answer,prompt_idxs,labels
     return tokenize
 tokenize_func = build_tokenzie_func(tokenizer)
-data = load_dataset(data_cache_dir+"/instructions-zh")
+data = load_dataset("cahya/instructions-zh",cache_dir=data_cache_dir)
 
 train_data = data['train'].map(tokenize_func)
 val_data = data['validation'].map(tokenize_func)
