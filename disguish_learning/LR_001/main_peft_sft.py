@@ -1,8 +1,8 @@
 #encoding uft-8
-
+import os
 
 import transformers
-from transformers import  AutoModel,AutoTokenizer
+from transformers import  AutoModelForCausalLM,AutoTokenizer
 import torch
 from peft import (
     prepare_model_for_int8_training,
@@ -17,9 +17,10 @@ cache_dir = '/root/autodl-tmp/model/'
 data_cache_dir = '/root/autodl-tmp/data/'
 ##############
 # 模型部分 THUDM/glm-large-chinese 733m THUDM/glm-10b bigscience/bloom-7b1
-model = AutoModel.from_pretrained('THUDM/glm-2b',cache_dir=cache_dir,trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained('THUDM/glm-2b',cache_dir=cache_dir,trust_remote_code=True)
 tokenizer = AutoTokenizer.from_pretrained('THUDM/glm-2b',cache_dir=cache_dir,trust_remote_code=True)
 print(model.parameters())
+print(model.generation_config)
 model = prepare_model_for_int8_training(model)
 lora_config = LoraConfig(
     r=8,#LORA_R,
@@ -49,15 +50,36 @@ def split_train_example(text:str):
 
     return prompt,answer
 
-def build_tokenzie_func(tokenizer,pad_idx=0):
-    def tokenize(text):
-        prompt,answer = split_train_example(text)
-        prompt_idxs = tokenizer(prompt)
-        answer_idxs = tokenizer(answer) if answer is not None else None
 
-        labels = [pad_idx] * len(prompt_idxs) + answer_idxs
-        return prompt,answer,prompt_idxs,labels
+def build_tokenzie_func(tokenizer, pad_idx=0, max_length=256, pad=True):
+    def tokenize(example):
+        text = example['text']
+        prompt, answer = split_train_example(text)
+        prompt_idxs = tokenizer(prompt)
+        answer_idxs = tokenizer(answer) if answer is not None else []
+
+        example = {}
+        example['input_ids'] = prompt_idxs['input_ids'] + answer_idxs['input_ids']
+        example['attention_mask'] = prompt_idxs['attention_mask'] + answer_idxs['attention_mask']
+        example['labels'] = [0] * len(prompt_idxs['attention_mask']) + answer_idxs['input_ids']
+        example['prompt'] = prompt
+        example['answer'] = answer
+
+        if (len(example['input_ids']) < max_length):
+            count = max_length - len(example['input_ids'])
+            example['input_ids'] = example['input_ids'] + [0] * count
+            example['attention_mask'] = example['attention_mask'] + [0] * count
+            example['labels'] = example['labels'] + [0] * count
+
+        example['input_ids'] = example['input_ids'][:max_length]
+        example['attention_mask'] = example['attention_mask'][:max_length]
+        example['labels'] = example['labels'][:max_length]
+
+        return example
+
     return tokenize
+
+
 tokenize_func = build_tokenzie_func(tokenizer)
 data = load_dataset("cahya/instructions-zh",cache_dir=data_cache_dir)
 
@@ -107,6 +129,8 @@ if torch.__version__ >= "2":
 trainer.train()
 
 
-model.save_pretrained("lora-alpaca")
+save_path = cache_dir + "/lora-alpaca"
+model.save_pretrained(save_path)
+torch.save(model.base_model,os.path.join(save_path,'model.bin'))
 
 print("\n If there's a warning about missing keys above, please disregard :)")
