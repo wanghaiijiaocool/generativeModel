@@ -98,6 +98,11 @@ val_data = data['validation'].map(tokenize_func)
 test_data = data['test'].map(tokenize_func)
 
 ddp = True if torch.cuda.device_count() > 1 else False
+
+log_path = cache_dir + "/lora-alpaca/log"
+if(not os.path.exists(log_path)):
+    os.makedirs(log_path,exist_ok=True)
+
 trainer = transformers.Trainer(
     model=model,
     train_dataset=train_data,
@@ -109,12 +114,12 @@ trainer = transformers.Trainer(
         num_train_epochs=3,
         learning_rate=1e-5,
         fp16=True,
-        logging_steps=2000,
+        logging_steps=200,
         evaluation_strategy="steps",
         save_strategy="steps",
-        eval_steps=2000,
-        save_steps=2000,
-        output_dir="lora-alpaca",
+        eval_steps=200,
+        save_steps=200,
+        output_dir=log_path,
         save_total_limit=3,
         load_best_model_at_end=True,
         ddp_find_unused_parameters=False if ddp else None,
