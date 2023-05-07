@@ -15,7 +15,7 @@ from peft import (
     get_peft_model,
     get_peft_model_state_dict,
 )
-from datasets import load_dataset,DownloadMode
+from datasets import load_dataset,DownloadMode,load_from_disk
 
 cache_dir = '/root/autodl-tmp/model/'
 model = AutoModelForCausalLM.from_pretrained('bigscience/bloom-3b', cache_dir=cache_dir,trust_remote_code=True)
@@ -36,10 +36,11 @@ model = get_peft_model(model, lora_config)
 
 data_cache_dir = '/root/autodl-tmp/data/'
 
-data = load_dataset("cahya/instructions-zh",
-                    cache_dir=data_cache_dir,
-                    max_retries=10,
-                    download_mode=DownloadMode.REUSE_CACHE_IF_EXISTS)
+# data = load_dataset("cahya/instructions-zh",
+#                     cache_dir=data_cache_dir,
+#                     max_retries=10,
+#                     download_mode=DownloadMode.REUSE_CACHE_IF_EXISTS)
+data = load_from_disk(os.path.join(data_cache_dir,"cahya/instructions-zh"))
 
 for x in data['train']:
     print(x)
