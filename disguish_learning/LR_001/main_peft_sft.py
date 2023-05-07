@@ -18,7 +18,7 @@ from peft import (
 from datasets import load_dataset,DownloadMode
 
 cache_dir = '/root/autodl-tmp/model/'
-model = AutoModelForCausalLM.from_pretrained('bigscience/bloom-3b', cache_dir=cache_dir, trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained('bigscience/bloom-3b', cache_dir=cache_dir,trust_remote_code=True)
 tokenizer = AutoTokenizer.from_pretrained('bigscience/bloom-3b', cache_dir=cache_dir, trust_remote_code=True)
 
 # make model as
@@ -38,6 +38,7 @@ data_cache_dir = '/root/autodl-tmp/data/'
 
 data = load_dataset("cahya/instructions-zh",
                     cache_dir=data_cache_dir,
+                    max_retries=10,
                     download_mode=DownloadMode.REUSE_CACHE_IF_EXISTS)
 
 for x in data['train']:
