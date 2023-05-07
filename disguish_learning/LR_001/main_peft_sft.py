@@ -121,6 +121,7 @@ trainer = transformers.Trainer(
         save_steps=200,
         output_dir=log_path,
         save_total_limit=3,
+        max_steps=10,
         load_best_model_at_end=True,
         ddp_find_unused_parameters=False if ddp else None,
     ),
