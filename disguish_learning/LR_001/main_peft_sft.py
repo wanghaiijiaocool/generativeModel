@@ -35,12 +35,13 @@ lora_config = LoraConfig(
 model = get_peft_model(model, lora_config)
 
 data_cache_dir = '/root/autodl-tmp/data/'
+dataset_name = "cahya___parquet/cahya--instructions-zh-507237297bfcf9f5"
 
 # data = load_dataset("cahya/instructions-zh",
 #                     cache_dir=data_cache_dir,
 #                     max_retries=10,
 #                     download_mode=DownloadMode.REUSE_CACHE_IF_EXISTS)
-data = load_from_disk(os.path.join(data_cache_dir,"cahya/instructions-zh"))
+data = load_from_disk(os.path.join(data_cache_dir,dataset_name))
 
 for x in data['train']:
     print(x)
