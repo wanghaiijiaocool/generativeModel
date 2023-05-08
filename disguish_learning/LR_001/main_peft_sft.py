@@ -35,12 +35,9 @@ lora_config = LoraConfig(
 model = get_peft_model(model, lora_config)
 
 data_cache_dir = '/root/autodl-tmp/data/'
-dataset_name = "cahya___parquet/cahya--instructions-zh-507237297bfcf9f5"
+dataset_name = "cahya-instructions-zh"
 
-# data = load_dataset("cahya/instructions-zh",
-#                     cache_dir=data_cache_dir,
-#                     max_retries=10,
-#                     download_mode=DownloadMode.REUSE_CACHE_IF_EXISTS)
+#data = load_dataset("cahya/instructions-zh",cache_dir=data_cache_dir,max_retries=10,download_mode=DownloadMode.REUSE_CACHE_IF_EXISTS)
 data = load_from_disk(os.path.join(data_cache_dir,dataset_name))
 
 for x in data['train']:
@@ -151,7 +148,7 @@ print("\n If there's a warning about missing keys above, please disregard :)")
 
 save_path = cache_dir + "/lora-alpaca"
 model.save_pretrained(save_path)
-torch.save(model.base_model, os.path.join(save_path, 'model.bin'))
+torch.save(model.get_base_model(), os.path.join(save_path, 'model.bin'))
 
 # 测试部分
 
