@@ -23,7 +23,7 @@ tokenizer = AutoTokenizer.from_pretrained('bigscience/bloom-3b', cache_dir=cache
 
 # make model as
 
-model = prepare_model_for_int8_training(model)
+#model = prepare_model_for_int8_training(model)
 lora_config = LoraConfig(
     r=8,  # LORA_R,
     lora_alpha=16,  # LORA_ALPHA,
