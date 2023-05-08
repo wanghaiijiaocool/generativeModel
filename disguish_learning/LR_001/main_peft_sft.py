@@ -31,6 +31,7 @@ lora_config = LoraConfig(
     lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM",
+    merge_weights=True
 )
 model = get_peft_model(model, lora_config)
 
@@ -94,7 +95,6 @@ tokenize_func = build_tokenzie_func(tokenizer)
 
 train_data = data['train'].map(tokenize_func)
 
-print(train_data[1])
 
 val_data = data['validation'].map(tokenize_func)
 test_data = data['test'].map(tokenize_func)
@@ -110,8 +110,8 @@ trainer = transformers.Trainer(
     train_dataset=train_data,
     eval_dataset=val_data,
     args=transformers.TrainingArguments(
-        per_device_train_batch_size=4,
-        gradient_accumulation_steps=128 // 4,
+        per_device_train_batch_size=2,
+        gradient_accumulation_steps=128 // 2,
         warmup_steps=100,
         num_train_epochs=3,
         learning_rate=1e-5,
@@ -123,7 +123,7 @@ trainer = transformers.Trainer(
         save_steps=200,
         output_dir=log_path,
         save_total_limit=3,
-        max_steps=10,
+        max_steps=-1,
         load_best_model_at_end=True,
         ddp_find_unused_parameters=False if ddp else None,
     ),
@@ -145,7 +145,7 @@ if torch.__version__ >= "2":
 trainer.train()
 
 print("\n If there's a warning about missing keys above, please disregard :)")
-
+model.disable_adapter()
 save_path = cache_dir + "/lora-alpaca"
 model.save_pretrained(save_path)
 torch.save(model.get_base_model(), os.path.join(save_path, 'model.bin'))
@@ -161,12 +161,9 @@ for n, x in model.base_model.model.named_parameters():
         print(x.size())
 
 prompt = """
-User:习近平是谁么
-Assistant:
-习近平是中国共产党总书记,也是中国国家主席。
-User:他有什么职责
-Assistant:习近平负责领导中国共产党和中国政府,并监督中国的政治和经济。
-User:我们在聊谁呢？
+User:漫威电影都有哪些？
+Assistant:《复仇者联盟》、《钢铁侠》、《美国队长》、《雷神》、《绿巨人》、《黑寡妇》、《蚁人》、《惊奇队长》、《黑豹》、《复仇者联盟2》、《银河护卫队》、《复仇者联盟3》、《复仇者联盟4》
+User:《复仇者联盟》讲述了什么？
 """
 prompt_idxs = tokenizer(prompt)
 
@@ -182,5 +179,4 @@ for z in x.cpu().numpy():
     y = tokenizer.decode(z)
     print(y)
 
-model.save_pretrained("lora-alpaca")
 
