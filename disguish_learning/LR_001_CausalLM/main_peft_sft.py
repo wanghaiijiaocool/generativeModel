@@ -3,7 +3,7 @@
 
 import os
 
-os.chdir('/root/autodl-tmp/generativeModel/disguish_learning/LR_001')
+os.chdir('/root/autodl-tmp/generativeModel/disguish_learning/LR_001_CausalLM')
 
 import transformers
 from transformers import AutoModelForCausalLM, AutoTokenizer
