@@ -17,22 +17,25 @@ class rm_pair(torch.nn.Module):
         #     raise Exception("not implemented")
         self.base_model = base_model
     def forward(self,**kwargs):
-        input_ids = kwargs['input_ids']
-        att_mask = kwargs['attention_mask']
-        labels = kwargs['labels'] if 'labels' in kwargs else None
 
-        output = self.base_model(input_ids=input_ids,attention_mask = att_mask)
 
+        positive = kwargs['positive']
+        att_mask_pos = kwargs['att_mask_pos']
+        pos = self.base_model(input_ids=positive,attention_mask = att_mask_pos)
         # use [CLS] or whatever the first token to classify
-        logits = output.logits[...,0]
+        logits_pos =torch.tanh(pos.logits[...,0])
 
         loss = None
-        if(labels is not None):
-            loss_fct = torch.nn.BCELoss(size_average=True)
-            loss = loss_fct(logits.view(-1).float(),labels.view(-1).float())
+        if("negtive" in kwargs):
+            att_mask_neg = kwargs['att_mask_neg']
+            negtive = kwargs['negtive']
+            neg = self.base_model(input_ids=negtive, attention_mask=att_mask_neg)
+            logits_neg = torch.tanh(neg.logits[..., 0])
+            loss =  max(logits_neg - logits_pos, 0 )
+
 
         return transformers.utils.ModelOutput(
             loss=loss,
-            logits=logits
+            score=logits_pos
         )
 
