@@ -1,6 +1,8 @@
 #encoding=utf-8
-
-def data_collator_self():
+from dataclasses import dataclass
+from transformers.data.data_collator import DataCollatorMixin
+@dataclass
+class data_collator_self(DataCollatorMixin):
     def torch_call(self, features):
         import torch
         label_name = "label" if "label" in features[0].keys() else "labels"
