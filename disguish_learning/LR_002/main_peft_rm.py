@@ -14,7 +14,7 @@ from peft import (
     get_peft_model_state_dict,
 )
 from datasets import load_dataset,load_from_disk
-from disguish_learning.utils.data_fn import build_tokenzie_func,data_collator_self
+from disguish_learning.utils.data_fn import build_tokenzie_func_pair,data_collator_self
 
 
 cache_dir = '/root/autodl-tmp/model/'
@@ -46,7 +46,7 @@ data_cache_dir = '/root/autodl-tmp/data/'
 dataset_name = "yitingxie-rlhf-reward-datasets"
 dataset = load_from_disk(os.path.join(data_cache_dir,dataset_name))
 
-tokenize_func = build_tokenzie_func(tokenizer,max_length=1024)
+tokenize_func = build_tokenzie_func_pair(tokenizer,max_length=1024)
 train_data = dataset['train'].map(tokenize_func)
 test_data = dataset['test'].map(tokenize_func)
 
@@ -71,9 +71,9 @@ trainer = transformers.Trainer(
         save_strategy="steps",
         eval_steps=200,
         save_steps=200,
-        output_dir="lora-alpaca",
+        output_dir="lora-alpaca/log",
         save_total_limit=3,
-        max_steps=10,
+        max_steps=-1,
         load_best_model_at_end=True,
         ddp_find_unused_parameters=False if ddp else None,
     ),
