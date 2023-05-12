@@ -67,11 +67,11 @@ def build_tokenzie_func_pair(tokenizer:transformers.PreTrainedTokenizer):
         rejected_idxs = tokenizer(rejected_text)
 
         # positive
-        positive = [tokenizer.cls_token_id] + prompt_idxs['input_ids'] + chosen_idxs['input_ids']
-        att_mask_pos = [1] + prompt_idxs['attention_mask'] + chosen_idxs['attention_mask']
+        positive =  prompt_idxs['input_ids'] + chosen_idxs['input_ids'] + [tokenizer.cls_token_id]
+        att_mask_pos =  prompt_idxs['attention_mask'] + chosen_idxs['attention_mask'] + [1]
         # negtive
-        negtive = [tokenizer.cls_token_id] +  prompt_idxs['input_ids'] + rejected_idxs['input_ids']
-        att_mask_neg =  [1] +  prompt_idxs['attention_mask'] + rejected_idxs['attention_mask']
+        negtive =   prompt_idxs['input_ids'] + rejected_idxs['input_ids'] + [tokenizer.cls_token_id]
+        att_mask_neg =  prompt_idxs['attention_mask'] + rejected_idxs['attention_mask'] + [1]
 
 
         pos_actual_len = len(positive)

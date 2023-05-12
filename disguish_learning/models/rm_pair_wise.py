@@ -24,6 +24,12 @@ class rm_pair(torch.nn.Module):
         if(hasattr(self.base_model,'keys_to_ignore_on_save')):
             self.keys_to_ignore_on_save += list(getattr(self.base_model.keys_to_ignore_on_save))
 
+    def pool_score(self,input_ids,hidden_states):
+        batch_size = hidden_states.shape[0]
+        sequence_lengths_pos = (torch.ne(input_ids, self.config.pad_token_id).sum(-1) - 1).to(hidden_states.device)
+        pool_logits_pos = hidden_states[torch.arange(batch_size, device=hidden_states.device), sequence_lengths_pos]
+        logits_pos = torch.tanh(self.scorer(pool_logits_pos))
+        return logits_pos
 
     #@torchsnooper.snoop()
     def forward(self,**kwargs):
@@ -31,16 +37,21 @@ class rm_pair(torch.nn.Module):
 
         positive = kwargs['positive']
         att_mask_pos = kwargs['att_mask_pos']
+
         pos = self.base_model(input_ids=positive,attention_mask = att_mask_pos)
         # use [CLS] or whatever the first token to classify
-        logits_pos =torch.tanh(self.scorer(pos.last_hidden_state[:,0,:]))
+        logits_pos = self.pool_score(positive,pos.last_hidden_state)
+
+
 
         loss = None
         if("negtive" in kwargs):
+
             att_mask_neg = kwargs['att_mask_neg']
             negtive = kwargs['negtive']
             neg = self.base_model(input_ids=negtive, attention_mask=att_mask_neg)
-            logits_neg = torch.tanh(self.scorer(neg.last_hidden_state[:,0,:]))
+            logits_neg = self.pool_score(negtive,neg.last_hidden_state)
+
             loss =  torch.sum(torch.where(logits_neg - logits_pos > 0, logits_neg - logits_pos, 0 ))
 
         #print(loss)
