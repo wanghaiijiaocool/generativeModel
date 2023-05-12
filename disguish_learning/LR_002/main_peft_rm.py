@@ -13,12 +13,11 @@ from peft import (
     get_peft_model,
     get_peft_model_state_dict,
 )
-from datasets import load_dataset
+from datasets import load_dataset,load_from_disk
 from disguish_learning.utils.data_fn import build_tokenzie_func,data_collator_self
 
 
 cache_dir = '/root/autodl-tmp/model/'
-data_cache_dir = '/root/autodl-tmp/data/'
 ##############
 # 模型部分 THUDM/glm-large-chinese 733m THUDM/glm-10b bigscience/bloom-7b1
 base_model_name = 'bigscience/bloom-3b'
@@ -43,14 +42,13 @@ tokenizer = AutoTokenizer.from_pretrained(base_model_name,cache_dir=cache_dir,tr
 
 ###############
 # 数据部分 cahya/instructions-zh train 76.9k eval2.02k test2.02k
+data_cache_dir = '/root/autodl-tmp/data/'
+dataset_name = "yitingxie-rlhf-reward-datasets"
+dataset = load_from_disk(os.path.join(data_cache_dir,dataset_name))
 
-
-tokenize_func = build_tokenzie_func(tokenizer)
-data = load_dataset("cahya/instructions-zh",cache_dir=data_cache_dir)
-
-train_data = data['train'].map(tokenize_func)
-val_data = data['validation'].map(tokenize_func)
-test_data = data['test'].map(tokenize_func)
+tokenize_func = build_tokenzie_func(tokenizer,max_length=1024)
+train_data = dataset['train'].map(tokenize_func)
+test_data = dataset['test'].map(tokenize_func)
 
 
 ##############
@@ -59,7 +57,7 @@ ddp = True if torch.cuda.device_count() > 1 else False
 trainer = transformers.Trainer(
     model=model,
     train_dataset=train_data,
-    eval_dataset=train_data,
+    eval_dataset=test_data,
     args=transformers.TrainingArguments(
         remove_unused_columns=False,
         per_device_train_batch_size=1,
