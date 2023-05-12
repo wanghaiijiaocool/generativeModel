@@ -1,8 +1,10 @@
 from dataclasses import dataclass
+
+import transformers
 from transformers.data.data_collator import DataCollatorMixin
 import torch
 
-def build_tokenzie_func(tokenizer, pad_idx=0, max_length=1024, pad=True):
+def build_tokenzie_func_pair(tokenizer:transformers.PreTrainedTokenizer, max_length=1024):
     def tokenize(example):
         """
         ignore label idx should always be -100
@@ -16,23 +18,16 @@ def build_tokenzie_func(tokenizer, pad_idx=0, max_length=1024, pad=True):
         rejected_idxs = tokenizer(rejected_text)
 
         # positive
-        positive = prompt_idxs['input_ids'] + chosen_idxs['input_ids']
-        att_mask_pos = prompt_idxs['attention_mask'] + chosen_idxs['attention_mask']
+        positive = [tokenizer.cls_token_id] + prompt_idxs['input_ids'] + chosen_idxs['input_ids']
+        att_mask_pos = [1] + prompt_idxs['attention_mask'] + chosen_idxs['attention_mask']
         # negtive
-        negtive = prompt_idxs['input_ids'] + rejected_idxs['input_ids']
-        att_mask_neg = prompt_idxs['attention_mask'] + rejected_idxs['attention_mask']
+        negtive = [tokenizer.cls_token_id] +  prompt_idxs['input_ids'] + rejected_idxs['input_ids']
+        att_mask_neg =  [1] +  prompt_idxs['attention_mask'] + rejected_idxs['attention_mask']
+
 
         pos_actual_len = len(positive)
         neg_actual_len = len(negtive)
         # pad and truck
-        positive = positive + [tokenizer.pad_token_id] * max(0, max_length - len(positive))
-        att_mask_pos = att_mask_pos + [0] * max(0, max_length - len(att_mask_pos))
-        negtive = negtive + [tokenizer.pad_token_id] * max(0, max_length - len(negtive))
-        att_mask_neg = att_mask_neg + [0] * max(0, max_length - len(att_mask_neg))
-        positive = positive[:max_length]
-        att_mask_pos = att_mask_pos[:max_length]
-        negtive = negtive[:max_length]
-        att_mask_neg = att_mask_neg[:max_length]
 
         example['pos_actual_len'] = pos_actual_len
         example['neg_actual_len'] = neg_actual_len
@@ -40,11 +35,8 @@ def build_tokenzie_func(tokenizer, pad_idx=0, max_length=1024, pad=True):
         example['positive'] = positive
         example['negtive'] = negtive
 
-        # example['prompt_idxs'] = prompt_idxs
         example['att_mask_pos'] = att_mask_pos
         example['att_mask_neg'] = att_mask_neg
-        # example['chosen_idxs'] = chosen_idxs
-        # example['rejected_idxs'] = rejected_idxs
 
         return example
 
