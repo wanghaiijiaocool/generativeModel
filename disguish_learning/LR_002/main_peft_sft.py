@@ -33,51 +33,7 @@ lora_config = LoraConfig(
 model = get_peft_model(model,lora_config)
 
 
-###############
-# 数据部分 cahya/instructions-zh train 76.9k eval2.02k test2.02k
-def split_train_example(text:str):
-    answer_prefix = "Assistant:"
-    prompt_prefix = "User:"
 
-    answer_start_idx = text.find(answer_prefix)
-    if(answer_start_idx > 0):
-        # this is an trian data
-        answer = text[answer_start_idx + len(answer_prefix):]
-        prompt = text[:answer_start_idx].replace(prompt_prefix,"")
-    else:
-        prompt = text
-        answer = None
-
-    return prompt,answer
-
-
-def build_tokenzie_func(tokenizer, pad_idx=0, max_length=256, pad=True):
-    def tokenize(example):
-        text = example['text']
-        prompt, answer = split_train_example(text)
-        prompt_idxs = tokenizer(prompt)
-        answer_idxs = tokenizer(answer) if answer is not None else []
-
-        example = {}
-        example['input_ids'] = prompt_idxs['input_ids'] + answer_idxs['input_ids']
-        example['attention_mask'] = prompt_idxs['attention_mask'] + answer_idxs['attention_mask']
-        example['labels'] = [0] * len(prompt_idxs['attention_mask']) + answer_idxs['input_ids']
-        example['prompt'] = prompt
-        example['answer'] = answer
-
-        if (len(example['input_ids']) < max_length):
-            count = max_length - len(example['input_ids'])
-            example['input_ids'] = example['input_ids'] + [0] * count
-            example['attention_mask'] = example['attention_mask'] + [0] * count
-            example['labels'] = example['labels'] + [0] * count
-
-        example['input_ids'] = example['input_ids'][:max_length]
-        example['attention_mask'] = example['attention_mask'][:max_length]
-        example['labels'] = example['labels'][:max_length]
-
-        return example
-
-    return tokenize
 
 
 tokenize_func = build_tokenzie_func(tokenizer)
