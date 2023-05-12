@@ -1,6 +1,7 @@
 #encoding uft-8
 import os
-
+import sys
+sys.path.insert(0, '/root/autodl-tmp/generativeModel/')
 os.chdir('/root/autodl-tmp/generativeModel/disguish_learning/LR_001_CausalLM')
 import transformers
 from transformers import AutoTokenizer,AutoModel
