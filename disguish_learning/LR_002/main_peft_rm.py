@@ -78,6 +78,7 @@ trainer = transformers.Trainer(
         max_steps=-1,
         load_best_model_at_end=True,
         ddp_find_unused_parameters=False if ddp else None,
+        label_names = []
     ),
     tokenizer=tokenizer,
     data_collator=data_collator_self()#transformers.DataCollatorForLanguageModeling(tokenizer, mlm=False),

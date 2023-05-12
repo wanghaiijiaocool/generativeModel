@@ -10,6 +10,7 @@ import torch
 import torchsnooper
 
 class rm_pair(torch.nn.Module):
+
     def __init__(self,base_model:torch.nn.Module):
         super(rm_pair,self).__init__()
         # if(isinstance(base_model_name_or_path_or_base,str)):
@@ -19,6 +20,11 @@ class rm_pair(torch.nn.Module):
         self.base_model = base_model
         self.config = base_model.config
         self.scorer = torch.nn.Linear(self.config.hidden_size,1,bias=False)
+        self.keys_to_ignore_on_save = []
+        if(hasattr(self.base_model,'keys_to_ignore_on_save')):
+            self.keys_to_ignore_on_save += list(getattr(self.base_model.keys_to_ignore_on_save))
+
+
     #@torchsnooper.snoop()
     def forward(self,**kwargs):
 
@@ -37,7 +43,7 @@ class rm_pair(torch.nn.Module):
             logits_neg = torch.tanh(self.scorer(neg.last_hidden_state[:,0,:]))
             loss =  torch.sum(torch.where(logits_neg - logits_pos > 0, logits_neg - logits_pos, 0 ))
 
-
+        #print(loss)
         return transformers.utils.ModelOutput(
             loss=loss,
             score=logits_pos

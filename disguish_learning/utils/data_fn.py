@@ -139,7 +139,7 @@ class data_collator_self(DataCollatorMixin):
             features)  # [{k: v for k, v in feature.items() if k != label_name} for feature in features]
 
         batch = no_labels_features
-
+        batch['return_loss'] = True
         if labels is None:
             return batch
 
