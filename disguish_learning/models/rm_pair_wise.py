@@ -7,6 +7,7 @@
 import transformers
 from transformers import  AutoModel
 import torch
+import torchsnooper
 
 class rm_pair(torch.nn.Module):
     def __init__(self,base_model:torch.nn.Module):
@@ -16,6 +17,9 @@ class rm_pair(torch.nn.Module):
         # else:
         #     raise Exception("not implemented")
         self.base_model = base_model
+        self.config = base_model.config
+        self.scorer = torch.nn.Linear(self.config.hidden_size,1,bias=False)
+    #@torchsnooper.snoop()
     def forward(self,**kwargs):
 
 
@@ -23,15 +27,15 @@ class rm_pair(torch.nn.Module):
         att_mask_pos = kwargs['att_mask_pos']
         pos = self.base_model(input_ids=positive,attention_mask = att_mask_pos)
         # use [CLS] or whatever the first token to classify
-        logits_pos =torch.tanh(pos.logits[...,0])
+        logits_pos =torch.tanh(self.scorer(pos.last_hidden_state[:,0,:]))
 
         loss = None
         if("negtive" in kwargs):
             att_mask_neg = kwargs['att_mask_neg']
             negtive = kwargs['negtive']
             neg = self.base_model(input_ids=negtive, attention_mask=att_mask_neg)
-            logits_neg = torch.tanh(neg.logits[..., 0])
-            loss =  max(logits_neg - logits_pos, 0 )
+            logits_neg = torch.tanh(self.scorer(neg.last_hidden_state[:,0,:]))
+            loss =  torch.sum(torch.where(logits_neg - logits_pos > 0, logits_neg - logits_pos, 0 ))
 
 
         return transformers.utils.ModelOutput(
