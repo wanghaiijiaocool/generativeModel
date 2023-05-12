@@ -25,7 +25,6 @@ def split_train_example_for_sft(text:str):
 
 
 def build_tokenzie_func(tokenizer:transformers.PreTrainedTokenizer, max_length=256):
-    tokenizer.add_tokens(new_tokens=)
     def tokenize(example):
         text = example['text']
         prompt, answer = split_train_example_for_sft(text)
