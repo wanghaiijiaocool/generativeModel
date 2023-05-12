@@ -38,6 +38,7 @@ model = get_peft_model(model,lora_config)
 # 最后一层还是要训练的
 model.base_model.model.scorer.weight.requires_grad = True
 
+transformers.BloomTokenizerFast.max_length = 256
 tokenizer = AutoTokenizer.from_pretrained(base_model_name,cache_dir=cache_dir,trust_remote_code=True)
 
 ###############
@@ -46,8 +47,9 @@ data_cache_dir = '/root/autodl-tmp/data/'
 dataset_name = "yitingxie-rlhf-reward-datasets"
 dataset = load_from_disk(os.path.join(data_cache_dir,dataset_name))
 
-tokenize_func = build_tokenzie_func_pair(tokenizer,max_length=1024)
-train_data = dataset['train'].map(tokenize_func)
+
+tokenize_func = build_tokenzie_func_pair(tokenizer)
+train_data = dataset['train'].map(tokenize_func).filter(lambda x:x['pos_actual_len']<=tokenizer.max_length and x['neg_actual_len']<=tokenizer.max_length)
 test_data = dataset['test'].map(tokenize_func)
 
 

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import transformers
 from transformers.data.data_collator import DataCollatorMixin
 import torch
+from transformers.tokenization_utils import PreTrainedTokenizerBase
 
 
 ###############
@@ -24,6 +25,7 @@ def split_train_example_for_sft(text:str):
 
 
 def build_tokenzie_func(tokenizer:transformers.PreTrainedTokenizer, max_length=256):
+    tokenizer.add_tokens(new_tokens=)
     def tokenize(example):
         text = example['text']
         prompt, answer = split_train_example_for_sft(text)
@@ -51,11 +53,12 @@ def build_tokenzie_func(tokenizer:transformers.PreTrainedTokenizer, max_length=2
 
     return tokenize
 
-def build_tokenzie_func_pair(tokenizer:transformers.PreTrainedTokenizer, max_length=1024):
+def build_tokenzie_func_pair(tokenizer:transformers.PreTrainedTokenizer):
     def tokenize(example):
         """
         ignore label idx should always be -100
         """
+        max_length = tokenizer.max_length
         prompt_text = example['prompt']
         chosen_text = example['chosen']
         rejected_text = example['rejected']
@@ -94,11 +97,11 @@ def build_tokenzie_func_pair(tokenizer:transformers.PreTrainedTokenizer, max_len
         example['att_mask_neg'] = att_mask_neg
 
         return example
-
     return tokenize
 
 class data_collator_self(DataCollatorMixin):
     return_tensors: str = "pt"
+    tokenizer: PreTrainedTokenizerBase
 
     def batch_tensor_stack(self, features):
         assert len(features) > 0
