@@ -39,7 +39,7 @@ model = get_peft_model(model,lora_config)
 # 最后一层还是要训练的
 model.base_model.model.scorer.weight.requires_grad = True
 
-tokenizer = AutoTokenizer.from_pretrained('base_model_name',cache_dir=cache_dir,trust_remote_code=True)
+tokenizer = AutoTokenizer.from_pretrained(base_model_name,cache_dir=cache_dir,trust_remote_code=True)
 
 ###############
 # 数据部分 cahya/instructions-zh train 76.9k eval2.02k test2.02k
