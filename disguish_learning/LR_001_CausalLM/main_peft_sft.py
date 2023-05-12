@@ -146,7 +146,7 @@ trainer.train()
 
 print("\n If there's a warning about missing keys above, please disregard :)")
 model.disable_adapter()
-save_path = cache_dir + "/lora-alpaca"
+save_path = cache_dir + "/lora-alpaca/sft_model"
 model.save_pretrained(save_path)
 torch.save(model.get_base_model(), os.path.join(save_path, 'model.bin'))
 

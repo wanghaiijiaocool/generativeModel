@@ -57,8 +57,9 @@ ddp = True if torch.cuda.device_count() > 1 else False
 trainer = transformers.Trainer(
     model=model,
     train_dataset=train_data,
-    eval_dataset=val_data,
+    eval_dataset=train_data,
     args=transformers.TrainingArguments(
+        remove_unused_columns=False,
         per_device_train_batch_size=1,
         gradient_accumulation_steps=128 // 1,
         warmup_steps=100,
@@ -66,19 +67,20 @@ trainer = transformers.Trainer(
         learning_rate=1e-5,
         fp16=True,
         logging_steps=20,
-        max_steps= 10,
         evaluation_strategy="steps",
         save_strategy="steps",
         eval_steps=200,
         save_steps=200,
         output_dir="lora-alpaca",
         save_total_limit=3,
+        max_steps=10,
         load_best_model_at_end=True,
         ddp_find_unused_parameters=False if ddp else None,
     ),
-    data_collator=data_collator_self()
+    tokenizer=tokenizer,
+    data_collator=data_collator_self()#transformers.DataCollatorForLanguageModeling(tokenizer, mlm=False),
 )
-model.config.use_cache = False
+model.base_model.config.use_cache = False
 
 old_state_dict = model.state_dict
 model.state_dict = (
@@ -93,9 +95,9 @@ if torch.__version__ >= "2":
 trainer.train()
 
 
+save_path = cache_dir + "/lora-alpaca/reward_model"
 model.disable_adapter()
-save_path = cache_dir + "/lora-reward_model"
 model.save_pretrained(save_path)
-torch.save(model.get_base_model(), os.path.join(save_path, 'model.bin'))
+torch.save(model.get_base_model(),os.path.join(save_path,'model.bin'))
 
 print("\n If there's a warning about missing keys above, please disregard :)")
