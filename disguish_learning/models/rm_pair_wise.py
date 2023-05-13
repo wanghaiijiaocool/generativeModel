@@ -39,7 +39,7 @@ class rm_pair(torch.nn.Module):
         #print(logit)
 
 
-        return logits_pos
+        return logit
 
     #@torchsnooper.snoop()
     def forward(self,**kwargs):
