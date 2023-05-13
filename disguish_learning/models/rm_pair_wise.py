@@ -34,7 +34,7 @@ class rm_pair(torch.nn.Module):
         sequence_lengths_pos = (torch.ne(input_ids, self.config.pad_token_id).sum(-1) - 1).to(hidden_states.device)
         pool_logits_pos = hidden_states[torch.arange(batch_size, device=hidden_states.device), sequence_lengths_pos]
         logit = self.scorer(pool_logits_pos)
-        logits_pos = torch.tanh(logit)
+        #logits_pos = torch.tanh(logit)
         #print(pool_logits_pos)
         #print(logit)
 
