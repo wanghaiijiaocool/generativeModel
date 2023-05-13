@@ -62,7 +62,7 @@ class rm_pair(torch.nn.Module):
             neg = self.base_model(input_ids=negtive, attention_mask=att_mask_neg)
             logits_neg = self.pool_score(negtive,neg.last_hidden_state)
 
-            loss =  torch.sum(torch.where(logits_neg - logits_pos > 0, logits_neg - logits_pos, 0 ))
+            loss =  logits_neg - logits_pos#torch.sum(torch.where(logits_neg - logits_pos > 0, logits_neg - logits_pos, 0 ))
 
             print(loss,logits_neg,logits_pos)
             print()
