@@ -64,7 +64,9 @@ class rm_pair(torch.nn.Module):
 
             loss =  torch.sum(torch.where(logits_neg - logits_pos > 0, logits_neg - logits_pos, 0 ))
 
-        print(loss)
+            print(loss,logits_neg,logits_pos)
+            print()
+
         return transformers.utils.ModelOutput(
             loss=loss,
             score=logits_pos
