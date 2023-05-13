@@ -35,8 +35,8 @@ class rm_pair(torch.nn.Module):
         pool_logits_pos = hidden_states[torch.arange(batch_size, device=hidden_states.device), sequence_lengths_pos]
         logit = self.scorer(pool_logits_pos)
         logits_pos = torch.tanh(logit)
-        print(pool_logits_pos)
-        print(logit)
+        #print(pool_logits_pos)
+        #print(logit)
 
 
         return logits_pos
@@ -64,7 +64,7 @@ class rm_pair(torch.nn.Module):
 
             loss =  torch.sum(torch.where(logits_neg - logits_pos > 0, logits_neg - logits_pos, 0 ))
 
-        #print(loss)
+        print(loss)
         return transformers.utils.ModelOutput(
             loss=loss,
             score=logits_pos
