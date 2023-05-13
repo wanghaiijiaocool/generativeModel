@@ -20,9 +20,14 @@ class rm_pair(torch.nn.Module):
         self.base_model = base_model
         self.config = base_model.config
         self.scorer = torch.nn.Linear(self.config.hidden_size,1,bias=False)
+
         self.keys_to_ignore_on_save = []
         if(hasattr(self.base_model,'keys_to_ignore_on_save')):
-            self.keys_to_ignore_on_save += list(getattr(self.base_model.keys_to_ignore_on_save))
+            self.keys_to_ignore_on_save += list(getattr(self.base_model,self.base_model.keys_to_ignore_on_save))
+
+        self._init_weights()
+    def _init_weights(self):
+        torch.nn.init.trunc_normal_(self.scorer.weight,mean = 0., std = 0.01, a = -1., b = 1.)
 
     def pool_score(self,input_ids,hidden_states):
         batch_size = hidden_states.shape[0]
